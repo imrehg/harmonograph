@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Két inga harmonograph</title>
+    <link rel="stylesheet" type="text/css" href="css/harmonograph.css" />
+    <script src="js/processing-1.3.6.min.js"></script>
+  </head>
+  <body>
+    <h1>Két inga harmonograph</h1>
+    <p>Játszál!</p>
+<script type="application/processing">
+
+float i = 0;
+float pos1 = 0;
+float pos2 = 0;
+float oldpos1 = 0;
+float oldpos2 = 0;
+boolean second = false;
+boolean drawline = true;  // if false then flying ellipse
+
+void setup()
+{
+  size(500, 500);
+  noStroke();
+  smooth();
+  oldpos1 = width/2;
+  oldpos2 = height/2;
+  background(200)
+}
+
+void draw()
+{
+  
+  i += 1;
+  // angle between the two pendulum arms
+  a1 = 0;
+  a2 = PI/2;
+
+  // pendulum positions
+  p1 = 0.9*width/2*sin(PI*i/200);
+  p2 = 0.9*width/2*sin(PI*i/190+0.45);
+
+  x = p1 * cos(a1) + p2 * cos(a2);
+  y = p1 * sin(a1) + p2 * sin(a2);
+
+  pos1 = width/2 + x;
+  pos2 = height/2 + y;
+  
+  if (drawline) {
+    if (second) {
+      stroke(10);
+      strokeWeight(3);
+      line(oldpos1, oldpos2, pos1, pos2);
+    } else {
+      second = true;
+    }
+  } else {
+    background(200)
+    fill(50);
+    ellipse(pos1, pos2, 15, 15);
+  }
+  oldpos1 = pos1;
+  oldpos2 = pos2;
+}
+</script>
+    <canvas id="sketch"></canvas>
+  <br>
+  <button onclick="restart();">Restart</button>
+  <button onclick="pause();">Pause</button>
+  <br>
+  Adjust: style, speed, period (x, y), random period, phase, put parameters on page, save to png http://www.nihilogic.dk/labs/canvas2image/
+
+  </body>
+</html>
+
+
+<!-- var oCanvas = document.getElementById("thecanvas"); -->
+
+<!-- Canvas2Image.saveAsPNG(oCanvas);   -->
+
+
+<!-- <html> -->
+<!-- <head> -->
+<!--   <meta http-equiv="content-type" content="text/html; charset=utf-8"/> -->
+<!--   <title>harmonograph</title> -->
+<!--   <link rel="stylesheet" type="text/css" href="harmonograph.css" /> -->
+<!--   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script> -->
+<!--   <script src="processing-1.3.6.min.js"></script> -->
+<!--   <\!-- <script type="text/javascript" src="http://use.typekit.com/pdl2vgv.js"></script> -\-> -->
+<!--   <\!-- <script type="text/javascript">try{Typekit.load();}catch(e){}</script> -\-> -->
+
+<!--   </head> -->
+<!--   <body> -->
+<!--     <canvas id="sketch" data-processing-sources="harmonograph.pde"></canvas> -->
+<!--     <\!-- <button onclick="startSketch();">Start</button> -\-> -->
+<!--     <\!-- <button onclick="stopSketch();">Stop</button> -\-> -->
+
+<!--     <\!-- <script type="application/javascript"> -\-> -->
+<!--     <\!--   var processingInstance; -\-> -->
+
+<!--     <\!--   function startSketch() { -\-> -->
+<!--     <\!--     switchSketchState(true); -\-> -->
+<!--     <\!--   } -\-> -->
+      
+<!--     <\!--   function stopSketch() { -\-> -->
+<!--     <\!--     switchSketchState(false); -\-> -->
+<!--     <\!--   } -\-> -->
+
+<!--     <\!--   function switchSketchState(on) { -\-> -->
+<!--     <\!--     if (!processingInstance) { -\-> -->
+<!--     <\!--       processingInstance = Processing.getInstanceById('sketch'); -\-> -->
+<!--     <\!--     } -\-> -->
+
+<!--     <\!--     if (on) { -\-> -->
+<!--     <\!--       processingInstance.loop();  // call Processing loop() function -\-> -->
+<!--     <\!--     } else { -\-> -->
+<!--     <\!--      processingInstance.noLoop(); // stop animation, call noLoop() -\-> -->
+<!--     <\!--     } -\-> -->
+<!--     <\!--   } -\-> -->
+<!--     <\!-- </script> -\-> -->
+<!--   </body> -->
+<!-- </html> -->
+
+
+<!-- <\!-- </head> -\-> -->
+
+<!-- <\!-- <body> -\-> -->
+<!-- <\!-- 	<div id="header"> -\-> -->
+<!-- <\!-- 		<span class=title>coaltrace.js</span><br> -\-> -->
+<!-- <\!-- 		<span class=subtitle><a class="off" href="../index.html">trvrb</a> / <a class="off" href="../projects.html">projects</a></span> -\-> -->
+<!-- <\!-- 	</div> -\-> -->
+
+<!-- <\!-- 	<div id="banner">	 -\-> -->
+<!-- <\!-- 	<div id="text"> -\-> -->
+	
+<!-- <\!-- 		<p class="initial margin"> -\-> -->
+<!-- <\!-- 		<script src="processing-1.3.6.min.js"></script> -\-> -->
+<!-- <\!-- 		<canvas class="offset" datasrc="coaltrace.pjs" width="600" height="450"></canvas>	 -\-> -->
+						
+<!-- <\!-- 		<p class="initial"> -\-> -->
+<!-- <\!-- 		This is a simulation of the basic demographic / genealogical process.  Individuals are born and individuals die.  This causes lineages to branch and to disappear, and causes the population to share a common ancestor at some time in the past.  The <em>coalescent</em> provides a mathematical description of these patterns of ancestry. -\-> -->
+		
+<!-- <\!-- 		<p> -\-> -->
+<!-- <\!-- 		Choose amplitude, period, and so on. -\-> -->
+		
+<!-- <\!-- 		<p> -\-> -->
+
+
+					
+<!-- <\!-- 	</div> -\-> -->
+<!-- <\!-- 	</div> -\-> -->
+<!-- <\!-- </body> -\-> -->
+<!-- <\!-- </html> -\-> -->
+
+<!-- <\!-- notes: http://js.processing.org/learning -\-> -->
+<!-- <\!-- Accessing from Javascript -\-> -->
+<!-- <\!-- https://wiki.mozilla.org/Processing.js_for_JavaScript_Devs#Accessing_Processing_from_JavaScript -\-> -->
