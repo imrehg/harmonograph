@@ -2,12 +2,139 @@
 <html>
   <head>
     <title>Két inga harmonograph</title>
+    <meta property="og:image" content="http://gergely.imreh.net/harmonograph/screenshot.png" />
     <link rel="stylesheet" type="text/css" href="css/harmonograph.css" />
-    <script src="js/processing-1.3.6.min.js"></script>
+    <link rel="stylesheet" href="css/smoothness/jquery-ui-1.8.17.custom.css" type="text/css" media="all" />
+
+    <script src="js/jquery-1.7.1.min.js" type="text/javascript"></script>
+    <script src="js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/processing-1.3.6.min.js"></script>
   </head>
   <body>
-    <h1>Két inga harmonograph</h1>
+    <h3>Két inga harmonograph</h3>
     <p>Játszál!</p>
+
+
+<script type="application/javascript">
+      var processingInstance;
+      var looping = true;
+      var sketchType = true;
+
+      function restartSketch() {
+        if (!processingInstance) {
+          processingInstance = Processing.getInstanceById('sketch');
+        }
+        processingInstance.setup();
+        startSketch();
+      }
+
+      function startSketch() {
+        switchSketchState(true);
+      }
+      
+      function stopSketch() {
+        switchSketchState(false);
+      }
+
+      function pauseSketch() {
+        switchSketchState(!looping);
+      }
+
+      function switchSketchState(on) {
+        if (!processingInstance) {
+          processingInstance = Processing.getInstanceById('sketch');
+        }
+
+        looping = on;
+
+        if (on) {
+          processingInstance.loop();  // call Processing loop() function
+        } else {
+         processingInstance.noLoop(); // stop animation, call noLoop()
+        }
+      }
+
+      function setSketchRatio(value) {
+        if (!processingInstance) {
+          processingInstance = Processing.getInstanceById('sketch');
+        }
+        processingInstance.setRatio(value);
+        restartSketch();
+      }
+
+      function setSketchPhase(value) {
+        if (!processingInstance) {
+          processingInstance = Processing.getInstanceById('sketch');
+        }
+        processingInstance.setPhase(value);
+        restartSketch();
+      }
+
+      function setSketchType(line) {
+        if (!processingInstance) {
+          processingInstance = Processing.getInstanceById('sketch');
+        }
+        if (line != sketchType) {
+          processingInstance.setType(line);
+          restartSketch();
+          sketchType = line;
+        }
+      }
+
+      function roundNumber(num, dec) {
+        var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+	return result;
+      }
+
+      function ratio(value) {
+        var center = 5000;
+        var scale = 2000;
+        return roundNumber(Math.exp((value - center)/scale), 3);
+      }
+
+      function savePicture() {
+        var canvas = document.getElementById("sketch");
+        var img    = canvas.toDataURL("image/png");
+        window.open(img);
+      }
+
+      $(function() {
+		$( "#slider" ).slider({
+                    min: 0,
+		    max: 10000,
+		    value: 4554,
+                    slide: function( event, ui ) {
+                                var newRatio = ratio(ui.value);
+                                setSketchRatio( newRatio );
+				$( "#amount" ).val( newRatio );
+			}
+                   }
+                );
+                $( "#amount" ).val( ratio($( "#slider" ).slider( "value" )) );
+      });
+
+      $(function() {
+		$( "#phaseSlider" ).slider({
+                    min: 0,
+		    max: 62831,
+		    value: 0,
+                    slide: function( event, ui ) {
+                                var newPhase = roundNumber(ui.value/10000, 4);
+                                setSketchPhase( newPhase );
+				$( "#phase" ).val( roundNumber(newPhase / 3.1416, 4) + " π " );
+			}
+                   }
+                );
+                $( "#phase" ).val( roundNumber($( "#phaseSlider" ).slider( "value" )/10000, 4) +" π " );
+      });
+ 
+
+      $(function() {
+                $( "button" ).button();
+		$( "#radio" ).buttonset();
+      });
+</script>
+
 <script type="application/processing">
 
 float i = 0;
@@ -17,6 +144,8 @@ float oldpos1 = 0;
 float oldpos2 = 0;
 boolean second = false;
 boolean drawline = true;  // if false then flying ellipse
+float ratio = exp(-446/2000);
+var phase = 0;
 
 void setup()
 {
@@ -26,6 +155,20 @@ void setup()
   oldpos1 = width/2;
   oldpos2 = height/2;
   background(200)
+  i = 0;
+  second = false;
+}
+
+void setRatio(newRatio) {
+  ratio = newRatio;
+}
+
+void setPhase(newPhase) {
+  phase = newPhase;
+}
+
+void setType(newType) {
+  drawline = newType;
 }
 
 void draw()
@@ -33,12 +176,11 @@ void draw()
   
   i += 1;
   // angle between the two pendulum arms
-  a1 = 0;
-  a2 = PI/2;
+  a1 = 0;  a2 = PI/2;
 
   // pendulum positions
   p1 = 0.9*width/2*sin(PI*i/200);
-  p2 = 0.9*width/2*sin(PI*i/190+0.45);
+  p2 = 0.9*width/2*sin(PI*i/200*ratio + phase);
 
   x = p1 * cos(a1) + p2 * cos(a2);
   y = p1 * sin(a1) + p2 * sin(a2);
@@ -63,95 +205,35 @@ void draw()
   oldpos2 = pos2;
 }
 </script>
-    <canvas id="sketch"></canvas>
-  <br>
-  <button onclick="restart();">Restart</button>
-  <button onclick="pause();">Pause</button>
-  <br>
-  Adjust: style, speed, period (x, y), random period, phase, put parameters on page, save to png http://www.nihilogic.dk/labs/canvas2image/
 
+  <canvas id="sketch" valign></canvas>
+
+  <div id="controls">
+  <button id="restart" onclick="restartSketch();">újraindít</button>
+  <button id="pause" onclick="pauseSketch();">szünet/folytat</button>
+  <p>
+    <label for="amount">Ingak lengesaranya:</label>
+    <input type="text" id="amount" style="border:0; color:#f6931f; font-weight:bold;" />
+    <div id="slider"></div>
+    (Klikk es jobbra/balra gomba finom igazitashoz)
+  </p>
+  <p>
+    <label for="phase">Ingak fazisa:</label>
+    <input type="text" id="phase" style="border:0; color:#f6931f; font-weight:bold;" />
+    <div id="phaseSlider"></div>
+    (Klikk es jobbra/balra gomba finom igazitashoz)
+  </p>
+
+  <p>
+  <div id="radio">
+    <input type="radio" id="radio1" name="radio" checked="checked" onclick="setSketchType(true);"/><label for="radio1">Vonal</label>
+    <input type="radio" id="radio2" name="radio" onclick="setSketchType(false);" /><label for="radio2">Pont</label>
+  </div>
+  </p>
+
+  <p>
+  <button id="savepicture" onclick="savePicture()">kep mentese</button>
+  </p>
+  </div>
   </body>
 </html>
-
-
-<!-- var oCanvas = document.getElementById("thecanvas"); -->
-
-<!-- Canvas2Image.saveAsPNG(oCanvas);   -->
-
-
-<!-- <html> -->
-<!-- <head> -->
-<!--   <meta http-equiv="content-type" content="text/html; charset=utf-8"/> -->
-<!--   <title>harmonograph</title> -->
-<!--   <link rel="stylesheet" type="text/css" href="harmonograph.css" /> -->
-<!--   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script> -->
-<!--   <script src="processing-1.3.6.min.js"></script> -->
-<!--   <\!-- <script type="text/javascript" src="http://use.typekit.com/pdl2vgv.js"></script> -\-> -->
-<!--   <\!-- <script type="text/javascript">try{Typekit.load();}catch(e){}</script> -\-> -->
-
-<!--   </head> -->
-<!--   <body> -->
-<!--     <canvas id="sketch" data-processing-sources="harmonograph.pde"></canvas> -->
-<!--     <\!-- <button onclick="startSketch();">Start</button> -\-> -->
-<!--     <\!-- <button onclick="stopSketch();">Stop</button> -\-> -->
-
-<!--     <\!-- <script type="application/javascript"> -\-> -->
-<!--     <\!--   var processingInstance; -\-> -->
-
-<!--     <\!--   function startSketch() { -\-> -->
-<!--     <\!--     switchSketchState(true); -\-> -->
-<!--     <\!--   } -\-> -->
-      
-<!--     <\!--   function stopSketch() { -\-> -->
-<!--     <\!--     switchSketchState(false); -\-> -->
-<!--     <\!--   } -\-> -->
-
-<!--     <\!--   function switchSketchState(on) { -\-> -->
-<!--     <\!--     if (!processingInstance) { -\-> -->
-<!--     <\!--       processingInstance = Processing.getInstanceById('sketch'); -\-> -->
-<!--     <\!--     } -\-> -->
-
-<!--     <\!--     if (on) { -\-> -->
-<!--     <\!--       processingInstance.loop();  // call Processing loop() function -\-> -->
-<!--     <\!--     } else { -\-> -->
-<!--     <\!--      processingInstance.noLoop(); // stop animation, call noLoop() -\-> -->
-<!--     <\!--     } -\-> -->
-<!--     <\!--   } -\-> -->
-<!--     <\!-- </script> -\-> -->
-<!--   </body> -->
-<!-- </html> -->
-
-
-<!-- <\!-- </head> -\-> -->
-
-<!-- <\!-- <body> -\-> -->
-<!-- <\!-- 	<div id="header"> -\-> -->
-<!-- <\!-- 		<span class=title>coaltrace.js</span><br> -\-> -->
-<!-- <\!-- 		<span class=subtitle><a class="off" href="../index.html">trvrb</a> / <a class="off" href="../projects.html">projects</a></span> -\-> -->
-<!-- <\!-- 	</div> -\-> -->
-
-<!-- <\!-- 	<div id="banner">	 -\-> -->
-<!-- <\!-- 	<div id="text"> -\-> -->
-	
-<!-- <\!-- 		<p class="initial margin"> -\-> -->
-<!-- <\!-- 		<script src="processing-1.3.6.min.js"></script> -\-> -->
-<!-- <\!-- 		<canvas class="offset" datasrc="coaltrace.pjs" width="600" height="450"></canvas>	 -\-> -->
-						
-<!-- <\!-- 		<p class="initial"> -\-> -->
-<!-- <\!-- 		This is a simulation of the basic demographic / genealogical process.  Individuals are born and individuals die.  This causes lineages to branch and to disappear, and causes the population to share a common ancestor at some time in the past.  The <em>coalescent</em> provides a mathematical description of these patterns of ancestry. -\-> -->
-		
-<!-- <\!-- 		<p> -\-> -->
-<!-- <\!-- 		Choose amplitude, period, and so on. -\-> -->
-		
-<!-- <\!-- 		<p> -\-> -->
-
-
-					
-<!-- <\!-- 	</div> -\-> -->
-<!-- <\!-- 	</div> -\-> -->
-<!-- <\!-- </body> -\-> -->
-<!-- <\!-- </html> -\-> -->
-
-<!-- <\!-- notes: http://js.processing.org/learning -\-> -->
-<!-- <\!-- Accessing from Javascript -\-> -->
-<!-- <\!-- https://wiki.mozilla.org/Processing.js_for_JavaScript_Devs#Accessing_Processing_from_JavaScript -\-> -->
